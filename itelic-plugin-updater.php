@@ -71,6 +71,11 @@ class ITELIC_Plugin_Updater {
 	private $key = '';
 
 	/**
+	 * @var int
+	 */
+	private $id = 0;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param string $store_url  This is the URL to your store.
@@ -95,6 +100,10 @@ class ITELIC_Plugin_Updater {
 			$this->key = $args['key'];
 		}
 
+		if ( $args['activation_id'] ) {
+			$this->id = absint( $args['activation_id'] );
+		}
+
 		add_filter( 'pre_set_site_transient_update_plugins', array(
 			$this,
 			'check_for_update'
@@ -110,10 +119,9 @@ class ITELIC_Plugin_Updater {
 	 *
 	 * @since 1.0
 	 *
-	 * @param mixed $transient
+	 * @param object $transient
 	 *
-	 * @return mixed
-	 * @throws Exception
+	 * @return object
 	 */
 	public function check_for_update( $transient ) {
 
@@ -121,7 +129,12 @@ class ITELIC_Plugin_Updater {
 			return $transient;
 		}
 
-		$info = $this->get_latest_version( $this->key );
+		try {
+			$info = $this->get_latest_version( $this->key );
+		}
+		catch ( Exception $e ) {
+			return $transient;
+		}
 
 		if ( ! is_wp_error( $info ) && version_compare( $info->version, $this->version, '>' ) ) {
 
@@ -159,7 +172,12 @@ class ITELIC_Plugin_Updater {
 
 			if ( isset( $args->slug ) && $args->slug == plugin_basename( $this->file ) && $this->key ) {
 
-				$all_products = $this->get_product_info( $this->key );
+				try {
+					$all_products = $this->get_product_info( $this->key );
+				}
+				catch ( Exception $e ) {
+					return false;
+				}
 
 				$info = $all_products->list->{$this->product_id};
 
@@ -253,7 +271,13 @@ class ITELIC_Plugin_Updater {
 	 */
 	public function get_latest_version( $key ) {
 
-		$response = $this->call_api( self::EP_VERSION, self::METHOD_GET, $key );
+		if ( ! $this->id ) {
+			throw new Exception( "License key must be activated before retrieving the latest version." );
+		}
+
+		$response = $this->call_api( self::EP_VERSION, self::METHOD_GET, $key, array(
+			'activation_id' => $this->id
+		) );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
