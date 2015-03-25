@@ -95,8 +95,14 @@ class ITELIC_Plugin_Updater {
 			$this->key = $args['key'];
 		}
 
-		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
-		add_filter( 'plugins_api', array( $this, 'plugins_api_handler' ), 10, 3 );
+		add_filter( 'pre_set_site_transient_update_plugins', array(
+			$this,
+			'check_for_update'
+		) );
+		add_filter( 'plugins_api', array(
+			$this,
+			'plugins_api_handler'
+		), 10, 3 );
 	}
 
 	/**
@@ -215,17 +221,21 @@ class ITELIC_Plugin_Updater {
 	/**
 	 * Deactivate the license key on this site.
 	 *
-	 * @param string $key           License Key
-	 * @param int    $activation_id ID returned from
-	 *                              ITELIC_Plugin_Updater::activate
+	 * @param string     $key License Key
+	 * @param int|string $id_or_location
 	 *
 	 * @return boolean|WP_Error Boolean True on success, WP_Error object on
 	 *                          failure.
 	 */
-	public function deactivate( $key, $activation_id ) {
-		$params = array(
-			'location_id' => $activation_id
-		);
+	public function deactivate( $key, $id_or_location ) {
+
+		$params = array();
+
+		if ( is_numeric( $id_or_location ) ) {
+			$params['id'] = (int) $id_or_location;
+		} else {
+			$params['location'] = $id_or_location;
+		}
 
 		$response = $this->call_api( self::EP_DEACTIVATE, self::METHOD_POST, $key, $params );
 
