@@ -224,7 +224,9 @@ class ITELIC_Plugin_Updater {
 	public function activate( $key ) {
 
 		$params = array(
-			'location' => site_url()
+			'body' => array(
+				'location' => site_url()
+			)
 		);
 
 		$response = $this->call_api( self::EP_ACTIVATE, self::METHOD_POST, $key, $params );
@@ -248,7 +250,9 @@ class ITELIC_Plugin_Updater {
 	public function deactivate( $key, $id ) {
 
 		$params = array(
-			'id' => (int) $id
+			'body' => array(
+				'id' => (int) $id
+			)
 		);
 
 		$response = $this->call_api( self::EP_DEACTIVATE, self::METHOD_POST, $key, $params );
