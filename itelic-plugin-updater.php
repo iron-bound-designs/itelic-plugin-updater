@@ -94,6 +94,99 @@ class ITELIC_Plugin_Updater {
 		if ( $args['key'] ) {
 			$this->key = $args['key'];
 		}
+
+		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
+		add_filter( 'plugins_api', array( $this, 'plugins_api_handler' ), 10, 3 );
+	}
+
+	/**
+	 * Check for a plugin update.
+	 *
+	 * @since 1.0
+	 *
+	 * @param mixed $transient
+	 *
+	 * @return mixed
+	 * @throws Exception
+	 */
+	public function check_for_update( $transient ) {
+
+		if ( empty( $transient->checked ) || empty( $this->key ) ) {
+			return $transient;
+		}
+
+		$info = $this->get_latest_version( $this->key );
+
+		if ( ! is_wp_error( $info ) && version_compare( $info->version, $this->version, '>' ) ) {
+
+			$slug = plugin_basename( $this->file );
+
+			$transient->response[ $slug ] = (object) array(
+				'new_version' => $info->version,
+				'package'     => $info->package,
+				'slug'        => $slug
+			);
+		}
+
+		return $transient;
+	}
+
+	/**
+	 * A function for the WordPress "plugins_api" filter. Checks if
+	 * the user is requesting information about the current plugin and returns
+	 * its details if needed.
+	 *
+	 * This function is called before the Plugins API checks
+	 * for plugin information on WordPress.org.
+	 *
+	 * @param $res      bool|object The result object, or false (= default
+	 *                  value).
+	 * @param $action   string      The Plugins API action. We're interested in
+	 *                  'plugin_information'.
+	 * @param $args     array       The Plugins API parameters.
+	 *
+	 * @return object   The API response.
+	 */
+	public function plugins_api_handler( $res, $action, $args ) {
+
+		if ( $action == 'plugin_information' ) {
+
+			if ( isset( $args->slug ) && $args->slug == plugin_basename( $this->file ) && $this->key ) {
+
+				$all_products = $this->get_product_info( $this->key );
+
+				$info = $all_products->list->{$this->product_id};
+
+				$res = (object) array(
+					'name'          => $info->name,
+					'version'       => $info->version,
+					'slug'          => $args->slug,
+					'download_link' => $info->package_url,
+					'tested'        => $info->tested,
+					'requires'      => $info->requires,
+					'last_updated'  => isset( $info->last_updated ) ? date( get_option( 'date_format' ), strtotime( $info->last_updated ) ) : '',
+					'homepage'      => $info->description_url,
+					'sections'      => array(
+						'description' => $info->description,
+					),
+					'banners'       => array(
+						'low'  => $info->banner_low,
+						'high' => $info->banner_high
+					),
+					'external'      => true
+				);
+
+				// Add change log tab if the server sent it
+				if ( isset( $info->changelog ) ) {
+					$res->sections['changelog'] = $info->changelog;
+				}
+
+				return $res;
+			}
+		}
+
+		// Not our request, let WordPress handle this.
+		return false;
 	}
 
 	/**
@@ -101,7 +194,8 @@ class ITELIC_Plugin_Updater {
 	 *
 	 * @param string $key License Key
 	 *
-	 * @return int|WP_Error Activation Record ID on success, WP_Error object on failure.
+	 * @return int|WP_Error Activation Record ID on success, WP_Error object on
+	 *                      failure.
 	 */
 	public function activate( $key ) {
 
@@ -122,9 +216,11 @@ class ITELIC_Plugin_Updater {
 	 * Deactivate the license key on this site.
 	 *
 	 * @param string $key           License Key
-	 * @param int    $activation_id ID returned from ITELIC_Plugin_Updater::activate
+	 * @param int    $activation_id ID returned from
+	 *                              ITELIC_Plugin_Updater::activate
 	 *
-	 * @return boolean|WP_Error Boolean True on success, WP_Error object on failure.
+	 * @return boolean|WP_Error Boolean True on success, WP_Error object on
+	 *                          failure.
 	 */
 	public function deactivate( $key, $activation_id ) {
 		$params = array(
@@ -163,6 +259,33 @@ class ITELIC_Plugin_Updater {
 	}
 
 	/**
+	 * Get info about a license key.
+	 *
+	 * @since 1.0
+	 *
+	 * @param string $key
+	 *
+	 * @return object|WP_Error
+	 */
+	public function get_info( $key ) {
+		return $this->call_api( self::EP_INFO, self::METHOD_GET, $key );
+	}
+
+	/**
+	 * Get info about the product this license key connects to.
+	 *
+	 * @since 1.0
+	 *
+	 * @param string $key
+	 *
+	 * @return object|WP_Error
+	 * @throws Exception
+	 */
+	public function get_product_info( $key ) {
+		return $this->call_api( self::EP_PRODUCT, self::METHOD_GET, $key );
+	}
+
+	/**
 	 * Make a call to the API.
 	 *
 	 * This method is suitable for client consumption,
@@ -173,7 +296,8 @@ class ITELIC_Plugin_Updater {
 	 * @param string $key
 	 * @param array  $params
 	 *
-	 * @return object|WP_Error Decoded JSON on success, WP_Error object on error.
+	 * @return object|WP_Error Decoded JSON on success, WP_Error object on
+	 *                         error.
 	 *
 	 * @throws Exception If invalid HTTP method.
 	 */
@@ -220,7 +344,8 @@ class ITELIC_Plugin_Updater {
 	 *
 	 * @return WP_Error
 	 *
-	 * @throws Exception If response is not an error. To check for an error look at the 'success' property.
+	 * @throws Exception If response is not an error. To check for an error
+	 *                   look at the 'success' property.
 	 */
 	protected function response_to_error( stdClass $response ) {
 
