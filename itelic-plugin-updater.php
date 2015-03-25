@@ -222,20 +222,16 @@ class ITELIC_Plugin_Updater {
 	 * Deactivate the license key on this site.
 	 *
 	 * @param string     $key License Key
-	 * @param int|string $id_or_location
+	 * @param int|string $id  ID returned from activate method.
 	 *
 	 * @return boolean|WP_Error Boolean True on success, WP_Error object on
 	 *                          failure.
 	 */
-	public function deactivate( $key, $id_or_location ) {
+	public function deactivate( $key, $id ) {
 
-		$params = array();
-
-		if ( is_numeric( $id_or_location ) ) {
-			$params['id'] = (int) $id_or_location;
-		} else {
-			$params['location'] = $id_or_location;
-		}
+		$params = array(
+			'id' => (int) $id
+		);
 
 		$response = $this->call_api( self::EP_DEACTIVATE, self::METHOD_POST, $key, $params );
 
