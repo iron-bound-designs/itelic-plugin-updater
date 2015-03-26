@@ -195,9 +195,7 @@ class ITELIC_Plugin_Updater {
 					'last_updated'  => isset( $info->last_updated ) ? date( get_option( 'date_format' ), strtotime( $info->last_updated ) ) : '',
 					'homepage'      => $info->description_url,
 					'contributors'  => $info->contributors,
-					'sections'      => array(
-						'description' => $info->description,
-					),
+					'sections'      => $info->sections,
 					'banners'       => array(
 						'low'  => $info->banner_low,
 						'high' => $info->banner_high
@@ -205,10 +203,16 @@ class ITELIC_Plugin_Updater {
 					'external'      => true
 				);
 
-				// Add change log tab if the server sent it
+				if ( ! isset( $res->sections['description'] ) ) {
+					$res->sections['description'] = $info->description;
+				}
+
 				if ( isset( $info->changelog ) ) {
 					$res->sections['changelog'] = $info->changelog;
 				}
+
+				$data        = get_plugin_data( $this->file );
+				$res->author = "<a href=\"{$data['AuthorURI']}\">{$data['Author']}</a>";
 
 				return $res;
 			}

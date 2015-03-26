@@ -15,7 +15,7 @@ define( 'ITELIC_DEMO_VERSION', '1.0' );
 define( 'ITELIC_DEMO_PRODUCT_ID', 19 );
 define( 'ITELIC_DEMO_STORE_URL', 'http://www.itelic.dev' );
 
-set_site_transient( 'update_plugins', null );
+//set_site_transient( 'update_plugins', null );
 
 /**
  * Register an admin menu to contain our license key.
@@ -161,4 +161,4 @@ function itelic_make_plugin_updater() {
 	return $updater;
 }
 
-add_action( 'admin_init', 'itelic_make_plugin_updater' );
+add_action( 'admin_init', 'itelic_make_plugin_updater', 0 );
