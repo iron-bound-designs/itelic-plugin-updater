@@ -194,6 +194,7 @@ class ITELIC_Plugin_Updater {
 					'requires'      => $info->requires,
 					'last_updated'  => isset( $info->last_updated ) ? date( get_option( 'date_format' ), strtotime( $info->last_updated ) ) : '',
 					'homepage'      => $info->description_url,
+					'contributors'  => $info->contributors,
 					'sections'      => array(
 						'description' => $info->description,
 					),

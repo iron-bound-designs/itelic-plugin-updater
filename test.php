@@ -3,7 +3,7 @@
 Plugin Name: Plugin Updater Tester
 Plugin URI: http://ironbounddesigns.com
 Description: Test plugin updates
-Version: 0.9
+Version: 1.0
 Author: Iron Bound Designs
 Author URI: http://ironbounddesigns.com
 License: GPLv2
