@@ -146,9 +146,18 @@ function itelic_demo_display_admin_notice( $type, $message ) {
  * @return ITELIC_Plugin_Updater
  */
 function itelic_make_plugin_updater() {
-	return new ITELIC_Plugin_Updater( ITELIC_DEMO_STORE_URL, ITELIC_DEMO_PRODUCT_ID, __FILE__, array(
-		'version'       => 0.9,
-		'key'           => get_option( 'itelic_demo_license_key' ),
-		'activation_id' => get_option( 'itelic_demo_activation_id', 0 )
-	) );
+
+	static $updater = null;
+
+	if ( $updater === null ) {
+		$updater = new ITELIC_Plugin_Updater( ITELIC_DEMO_STORE_URL, ITELIC_DEMO_PRODUCT_ID, __FILE__, array(
+			'version'       => 0.9,
+			'key'           => get_option( 'itelic_demo_license_key' ),
+			'activation_id' => get_option( 'itelic_demo_activation_id', 0 )
+		) );
+	}
+
+	return $updater;
 }
+
+add_action( 'admin_init', 'itelic_make_plugin_updater' );

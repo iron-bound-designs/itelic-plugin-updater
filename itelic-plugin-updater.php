@@ -133,6 +133,7 @@ class ITELIC_Plugin_Updater {
 			$info = $this->get_latest_version( $this->key );
 		}
 		catch ( Exception $e ) {
+
 			return $transient;
 		}
 
@@ -170,7 +171,9 @@ class ITELIC_Plugin_Updater {
 
 		if ( $action == 'plugin_information' ) {
 
-			if ( isset( $args->slug ) && $args->slug == plugin_basename( $this->file ) && $this->key ) {
+			$slug = $args->slug;
+
+			if ( isset( $args->slug ) && $this->key && ( $slug == $this->file || $slug == plugin_basename( $this->file ) ) ) {
 
 				try {
 					$all_products = $this->get_product_info( $this->key );
@@ -279,7 +282,7 @@ class ITELIC_Plugin_Updater {
 			throw new Exception( "License key must be activated before retrieving the latest version." );
 		}
 
-		$response = $this->call_api( self::EP_VERSION, self::METHOD_GET, $key, array(
+		$response = $this->call_api( self::EP_VERSION, self::METHOD_GET, $key, array(), array(
 			'activation_id' => $this->id
 		) );
 
@@ -328,25 +331,26 @@ class ITELIC_Plugin_Updater {
 	 * @param string $endpoint
 	 * @param string $method
 	 * @param string $key
-	 * @param array  $params
+	 * @param array  $http_args
+	 * @param array  $query_params
 	 *
 	 * @return object|WP_Error Decoded JSON on success, WP_Error object on
 	 *                         error.
 	 *
 	 * @throws Exception If invalid HTTP method.
 	 */
-	public function call_api( $endpoint, $method, $key = '', $params = array() ) {
+	public function call_api( $endpoint, $method, $key = '', $http_args = array(), $query_params = array() ) {
 
 		$args = array(
 			'headers' => array()
 		);
-		$args = wp_parse_args( $params, $args );
+		$args = wp_parse_args( $http_args, $args );
 
 		if ( $key ) {
 			$args['headers']['Authorization'] = $this->generate_basic_auth( $key );
 		}
 
-		$url = $this->generate_endpoint_url( $endpoint );
+		$url = $this->generate_endpoint_url( $endpoint, $query_params );
 
 		if ( $method == self::METHOD_GET ) {
 			$response = wp_remote_get( $url, $args );
@@ -394,14 +398,21 @@ class ITELIC_Plugin_Updater {
 	 * Generate the endpoint URl.
 	 *
 	 * @param string $endpoint
+	 * @param array  $query_params
 	 *
 	 * @return string
 	 */
-	protected function generate_endpoint_url( $endpoint ) {
+	protected function generate_endpoint_url( $endpoint, $query_params = array() ) {
 
 		$base = $this->store_url . 'itelic-api';
 
-		return "$base/$endpoint/";
+		$url = "$base/$endpoint/";
+
+		if ( ! empty( $query_params ) ) {
+			$url = add_query_arg( $query_params, $url );
+		}
+
+		return $url;
 	}
 
 	/**
