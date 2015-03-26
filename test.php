@@ -11,7 +11,7 @@ License: GPLv2
 
 require_once( 'itelic-plugin-updater.php' );
 
-define( 'ITELIC_DEMO_VERSION', '0.9' );
+define( 'ITELIC_DEMO_VERSION', '1.0' );
 define( 'ITELIC_DEMO_PRODUCT_ID', 19 );
 define( 'ITELIC_DEMO_STORE_URL', 'http://www.itelic.dev' );
 

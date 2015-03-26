@@ -112,6 +112,7 @@ class ITELIC_Plugin_Updater {
 			$this,
 			'plugins_api_handler'
 		), 10, 3 );
+		add_filter( 'all_plugins', array( $this, 'add_slug_to_plugins_list' ) );
 	}
 
 	/**
@@ -163,7 +164,7 @@ class ITELIC_Plugin_Updater {
 	 *                  value).
 	 * @param $action   string      The Plugins API action. We're interested in
 	 *                  'plugin_information'.
-	 * @param $args     array       The Plugins API parameters.
+	 * @param $args     object       The Plugins API parameters.
 	 *
 	 * @return object   The API response.
 	 */
@@ -214,6 +215,27 @@ class ITELIC_Plugin_Updater {
 
 		// Not our request, let WordPress handle this.
 		return false;
+	}
+
+	/**
+	 * Add the slug to the list of plugins, which allows for showing the view
+	 * details link on the plugins list table.
+	 *
+	 * @param array $plugins
+	 *
+	 * @return array
+	 */
+	public function add_slug_to_plugins_list( $plugins ) {
+
+		foreach ( $plugins as $file => $data ) {
+
+			if ( $file == plugin_basename( $this->file ) ) {
+				$plugins[ $file ]['slug'] = plugin_basename( $this->file );
+			}
+
+		}
+
+		return $plugins;
 	}
 
 	/**
