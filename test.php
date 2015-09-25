@@ -12,10 +12,10 @@ License: GPLv2
 require_once( 'itelic-plugin-updater.php' );
 
 define( 'ITELIC_DEMO_VERSION', '1.0' );
-define( 'ITELIC_DEMO_PRODUCT_ID', 19 );
+define( 'ITELIC_DEMO_PRODUCT_ID', 169 );
 define( 'ITELIC_DEMO_STORE_URL', 'http://www.itelic.dev' );
 
-//set_site_transient( 'update_plugins', null );
+set_site_transient( 'update_plugins', null );
 
 /**
  * Register an admin menu to contain our license key.

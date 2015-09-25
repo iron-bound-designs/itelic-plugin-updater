@@ -107,14 +107,8 @@ class ITELIC_Plugin_Updater {
 			$this->id = absint( $args['activation_id'] );
 		}
 
-		add_filter( 'pre_set_site_transient_update_plugins', array(
-			$this,
-			'check_for_update'
-		) );
-		add_filter( 'plugins_api', array(
-			$this,
-			'plugins_api_handler'
-		), 10, 3 );
+		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
+		add_filter( 'plugins_api', array( $this, 'plugins_api_handler' ), 10, 3 );
 		add_filter( 'all_plugins', array( $this, 'add_slug_to_plugins_list' ) );
 	}
 
@@ -180,11 +174,20 @@ class ITELIC_Plugin_Updater {
 			if ( isset( $args->slug ) && $this->key && ( $slug == $this->file || $slug == plugin_basename( $this->file ) ) ) {
 
 				try {
-					$all_products = $this->get_product_info( $this->key );
+					$all_products = $this->get_product_info( $this->key, $this->id );
 				}
 				catch ( Exception $e ) {
-					return false;
+					return $res;
 				}
+
+				if ( is_wp_error( $all_products ) ) {
+					return $res;
+				}
+
+				if ( ! isset( $all_products->list ) ) {
+					return $res;
+				}
+
 
 				$info = $all_products->list->{$this->product_id};
 
@@ -222,7 +225,7 @@ class ITELIC_Plugin_Updater {
 		}
 
 		// Not our request, let WordPress handle this.
-		return false;
+		return $res;
 	}
 
 	/**
@@ -343,12 +346,13 @@ class ITELIC_Plugin_Updater {
 	 * @since 1.0
 	 *
 	 * @param string $key
+	 * @param int    $id
 	 *
 	 * @return object|WP_Error
 	 * @throws Exception
 	 */
-	public function get_product_info( $key ) {
-		return $this->call_api( self::EP_PRODUCT, self::METHOD_GET, $key );
+	public function get_product_info( $key, $id ) {
+		return $this->call_api( self::EP_PRODUCT, self::METHOD_GET, $key, $id );
 	}
 
 	/**
@@ -399,6 +403,16 @@ class ITELIC_Plugin_Updater {
 		$json = json_decode( $response_body );
 
 		if ( ! $json->success ) {
+
+			if ( ! $json ) {
+				$json = (object) array(
+					'error' => array(
+						'code'    => $response['code'],
+						'message' => $response['message']
+					)
+				);
+			}
+
 			return $this->response_to_error( $json );
 		} else {
 			return $json->body;
