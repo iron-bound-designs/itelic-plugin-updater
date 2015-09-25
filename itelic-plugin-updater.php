@@ -91,10 +91,13 @@ class ITELIC_Plugin_Updater {
 		$this->file       = $file;
 
 		if ( empty( $args['version'] ) ) {
-			throw new Exception( "Version required." );
-		}
 
-		$this->version = $args['version'];
+			$data = get_plugin_data( $file, false, false );
+
+			$this->version = $data['Version'];
+		} else {
+			$this->version = $args['version'];
+		}
 
 		if ( $args['key'] ) {
 			$this->key = $args['key'];
@@ -255,7 +258,8 @@ class ITELIC_Plugin_Updater {
 
 		$params = array(
 			'body' => array(
-				'location' => site_url()
+				'location' => site_url(),
+				'version'  => $this->version
 			)
 		);
 
@@ -445,12 +449,13 @@ class ITELIC_Plugin_Updater {
 	/**
 	 * Generate a basic auth header based on the license key.
 	 *
-	 * @param string $key
+	 * @param string     $key
+	 * @param int|string $activation
 	 *
 	 * @return string
 	 */
-	protected function generate_basic_auth( $key ) {
-		return 'Basic ' . base64_encode( $key . ':' );
+	protected function generate_basic_auth( $key, $activation = '' ) {
+		return 'Basic ' . base64_encode( $key . ':' . $activation );
 	}
 
 }
