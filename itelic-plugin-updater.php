@@ -313,9 +313,7 @@ class ITELIC_Plugin_Updater {
 			throw new Exception( "License key must be activated before retrieving the latest version." );
 		}
 
-		$response = $this->call_api( self::EP_VERSION, self::METHOD_GET, $key, $this->id, array(), array(
-			'activation_id' => $this->id
-		) );
+		$response = $this->call_api( self::EP_VERSION, self::METHOD_GET, $key, $this->id );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
