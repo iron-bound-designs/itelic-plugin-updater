@@ -263,7 +263,7 @@ class ITELIC_Plugin_Updater {
 			)
 		);
 
-		$response = $this->call_api( self::EP_ACTIVATE, self::METHOD_POST, $key, $params );
+		$response = $this->call_api( self::EP_ACTIVATE, self::METHOD_POST, $key, $this->id, $params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -289,7 +289,7 @@ class ITELIC_Plugin_Updater {
 			)
 		);
 
-		$response = $this->call_api( self::EP_DEACTIVATE, self::METHOD_POST, $key, $params );
+		$response = $this->call_api( self::EP_DEACTIVATE, self::METHOD_POST, $key, $id, $params );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -313,7 +313,7 @@ class ITELIC_Plugin_Updater {
 			throw new Exception( "License key must be activated before retrieving the latest version." );
 		}
 
-		$response = $this->call_api( self::EP_VERSION, self::METHOD_GET, $key, array(), array(
+		$response = $this->call_api( self::EP_VERSION, self::METHOD_GET, $key, $this->id, array(), array(
 			'activation_id' => $this->id
 		) );
 
@@ -362,6 +362,7 @@ class ITELIC_Plugin_Updater {
 	 * @param string $endpoint
 	 * @param string $method
 	 * @param string $key
+	 * @param int    $id
 	 * @param array  $http_args
 	 * @param array  $query_params
 	 *
@@ -370,7 +371,7 @@ class ITELIC_Plugin_Updater {
 	 *
 	 * @throws Exception If invalid HTTP method.
 	 */
-	public function call_api( $endpoint, $method, $key = '', $http_args = array(), $query_params = array() ) {
+	public function call_api( $endpoint, $method, $key = '', $id = 0, $http_args = array(), $query_params = array() ) {
 
 		$args = array(
 			'headers' => array()
@@ -378,7 +379,7 @@ class ITELIC_Plugin_Updater {
 		$args = wp_parse_args( $http_args, $args );
 
 		if ( $key ) {
-			$args['headers']['Authorization'] = $this->generate_basic_auth( $key );
+			$args['headers']['Authorization'] = $this->generate_basic_auth( $key, $id );
 		}
 
 		$url = $this->generate_endpoint_url( $endpoint, $query_params );
