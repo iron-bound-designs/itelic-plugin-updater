@@ -107,7 +107,10 @@ class ITELIC_Plugin_Updater {
 			$this->id = absint( $args['activation_id'] );
 		}
 
+		$file = plugin_basename( $file );
+
 		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
+		add_action( "after_plugin_row_$file", 'wp_plugin_update_row', 10, 2 );
 		add_filter( 'plugins_api', array( $this, 'plugins_api_handler' ), 10, 3 );
 		add_filter( 'all_plugins', array( $this, 'add_slug_to_plugins_list' ) );
 	}
