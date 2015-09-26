@@ -111,6 +111,7 @@ class ITELIC_Plugin_Updater {
 
 		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
 		add_action( "after_plugin_row_$file", 'wp_plugin_update_row', 10, 2 );
+		add_action( "in_plugin_update_message-{$file}", array( $this, 'show_upgrade_notice_on_list' ), 10, 2 );
 		add_filter( 'plugins_api', array( $this, 'plugins_api_handler' ), 10, 3 );
 		add_filter( 'all_plugins', array( $this, 'add_slug_to_plugins_list' ) );
 	}
@@ -147,9 +148,28 @@ class ITELIC_Plugin_Updater {
 				'package'     => $info->package,
 				'slug'        => $slug
 			);
+
+			if ( ! empty( $info->upgrade_notice ) ) {
+				$transient->response[ $slug ]->upgrade_notice = $info->upgrade_notice;
+			}
 		}
 
 		return $transient;
+	}
+
+	/**
+	 * Show the upgrade notice on the plugin list page.
+	 *
+	 * @since 1.0
+	 *
+	 * @param array $plugin_data
+	 * @param array $r
+	 */
+	public function show_upgrade_notice_on_list( $plugin_data, $r ) {
+
+		if ( ! empty( $plugin_data['upgrade_notice'] ) ) {
+			echo '&nbsp;' . $plugin_data['upgrade_notice'];
+		}
 	}
 
 	/**
