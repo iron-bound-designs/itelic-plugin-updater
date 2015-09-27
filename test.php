@@ -3,7 +3,7 @@
 Plugin Name: Plugin Updater Tester
 Plugin URI: http://ironbounddesigns.com
 Description: Test plugin updates
-Version: 1.0
+Version: 1.2.8
 Author: Iron Bound Designs
 Author URI: http://ironbounddesigns.com
 License: GPLv2
@@ -11,7 +11,7 @@ License: GPLv2
 
 require_once( 'itelic-plugin-updater.php' );
 
-define( 'ITELIC_DEMO_VERSION', '1.0' );
+define( 'ITELIC_DEMO_VERSION', '1.2.8' );
 define( 'ITELIC_DEMO_PRODUCT_ID', 169 );
 define( 'ITELIC_DEMO_STORE_URL', 'http://www.itelic.dev' );
 
@@ -31,7 +31,8 @@ add_action( 'admin_menu', 'itelic_demo_add_license_page' );
  */
 function itelic_demo_render_license_page() {
 
-	$key = get_option( 'itelic_demo_license_key' );
+	$key   = get_option( 'itelic_demo_license_key' );
+	$track = get_option( 'itelic_demo_track' );
 
 	?>
 
@@ -44,7 +45,15 @@ function itelic_demo_render_license_page() {
 				<tbody>
 				<tr>
 					<th><label for="itelic-demo-license-key"><?php _e( "License Key" ); ?></label></th>
-					<td><input type="text" id="itelic-demo-license-key" name="itelic_demo_license_key" value="<?php echo esc_attr( $key ); ?>"></td>
+					<td>
+						<input type="text" id="itelic-demo-license-key" name="itelic_demo_license_key" value="<?php echo esc_attr( $key ); ?>">
+					</td>
+				</tr>
+				<tr>
+					<th><label for="itelic-demo-track"><?php _e( "Enable beta releases" ); ?></label></th>
+					<td>
+						<input type="checkbox" id="itelic-demo-track" name="itelic_demo_track" <?php checked( 'pre-release', $track ); ?> value="pre-release">
+					</td>
 				</tr>
 				</tbody>
 			</table>
@@ -59,7 +68,7 @@ function itelic_demo_render_license_page() {
 
 	</div>
 
-<?php
+	<?php
 
 }
 
@@ -93,10 +102,25 @@ function itelic_demo_save_license_key() {
 	if ( isset( $_POST['activate'] ) ) {
 		update_option( 'itelic_demo_license_key', $key );
 
-		$id = itelic_make_plugin_updater()->activate( $key );
+		if ( isset( $_POST['itelic_demo_track'] ) && $_POST['itelic_demo_track'] == 'pre-release' ) {
+			$track = 'pre-release';
+		} else {
+			$track = 'stable';
+		}
+
+		update_option( 'itelic_demo_track', $track );
+
+		$id = itelic_make_plugin_updater()->activate( $key, $track );
 
 		if ( is_wp_error( $id ) ) {
-			itelic_demo_display_admin_notice( 'error', sprintf( __( "Could not activate license key because %s" ), $id->get_error_message() ) );
+
+			$msg = $id->get_error_message();
+
+			if ( ! $msg ) {
+				$msg = __( "an unknown error occured." );
+			}
+
+			itelic_demo_display_admin_notice( 'error', sprintf( __( "Could not activate license key because %s" ), $msg ) );
 		} else {
 			itelic_demo_display_admin_notice( 'success', __( "License key activated." ) );
 			update_option( 'itelic_demo_activation_id', $id );
@@ -113,7 +137,14 @@ function itelic_demo_save_license_key() {
 		$response = itelic_make_plugin_updater()->deactivate( $key, $id );
 
 		if ( is_wp_error( $response ) ) {
-			itelic_demo_display_admin_notice( 'error', sprintf( __( "Could not deactivate the license key because %s" ), $id->get_error_message() ) );
+
+			$msg = $id->get_error_message();
+
+			if ( ! $msg ) {
+				$msg = __( "an unknown error occured." );
+			}
+
+			itelic_demo_display_admin_notice( 'error', sprintf( __( "Could not deactivate the license key because %s" ), $msg ) );
 		} else {
 			itelic_demo_display_admin_notice( 'success', __( "License key deactivated." ) );
 			delete_option( 'itelic_demo_license_key' );
@@ -138,7 +169,7 @@ function itelic_demo_display_admin_notice( $type, $message ) {
 		<p><?php echo $message; ?></p>
 	</div>
 
-<?php
+	<?php
 }
 
 /**

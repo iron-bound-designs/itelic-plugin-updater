@@ -275,17 +275,19 @@ class ITELIC_Plugin_Updater {
 	/**
 	 * Activate a license key for this site.
 	 *
-	 * @param string $key License Key
+	 * @param string $key   License Key
+	 * @param string $track Either 'stable' or 'pre-release'
 	 *
 	 * @return int|WP_Error Activation Record ID on success, WP_Error object on
 	 *                      failure.
 	 */
-	public function activate( $key ) {
+	public function activate( $key, $track = 'stable' ) {
 
 		$params = array(
 			'body' => array(
 				'location' => site_url(),
-				'version'  => $this->version
+				'version'  => $this->version,
+				'track'    => $track
 			)
 		);
 
