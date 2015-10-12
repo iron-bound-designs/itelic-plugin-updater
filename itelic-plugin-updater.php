@@ -141,16 +141,18 @@ class ITELIC_Plugin_Updater {
 
 		if ( ! is_wp_error( $info ) && version_compare( $info->version, $this->version, '>' ) ) {
 
-			$slug = plugin_basename( $this->file );
+			$basename = plugin_basename( $this->file );
 
-			$transient->response[ $slug ] = (object) array(
+			$split = explode( '/', $basename );
+
+			$transient->response[ $basename ] = (object) array(
 				'new_version' => $info->version,
 				'package'     => $info->package,
-				'slug'        => $slug
+				'slug'        => $split[0]
 			);
 
 			if ( ! empty( $info->upgrade_notice ) ) {
-				$transient->response[ $slug ]->upgrade_notice = $info->upgrade_notice;
+				$transient->response[ $basename ]->upgrade_notice = $info->upgrade_notice;
 			}
 		}
 
