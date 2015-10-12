@@ -195,9 +195,13 @@ class ITELIC_Plugin_Updater {
 
 		if ( $action == 'plugin_information' ) {
 
-			$slug = $args->slug;
+			$requested_slug = isset( $args->slug ) ? $args->slug : '';
 
-			if ( isset( $args->slug ) && $this->key && ( $slug == $this->file || $slug == plugin_basename( $this->file ) ) ) {
+			$basename = plugin_basename( $this->file );
+			$split    = explode( '/', $basename );
+			$slug     = $split[0];
+
+			if ( $requested_slug && $this->key && ( $requested_slug == $slug ) ) {
 
 				try {
 					$all_products = $this->get_product_info( $this->key, $this->id );
