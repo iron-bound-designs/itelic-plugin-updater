@@ -148,7 +148,8 @@ class ITELIC_Plugin_Updater {
 			$transient->response[ $basename ] = (object) array(
 				'new_version' => $info->version,
 				'package'     => $info->package,
-				'slug'        => $split[0]
+				'slug'        => $split[0],
+				'plugin'      => $basename
 			);
 
 			if ( ! empty( $info->upgrade_notice ) ) {
@@ -266,7 +267,10 @@ class ITELIC_Plugin_Updater {
 		foreach ( $plugins as $file => $data ) {
 
 			if ( $file == plugin_basename( $this->file ) ) {
-				$plugins[ $file ]['slug'] = plugin_basename( $this->file );
+
+				$split = explode( '/', $file );
+
+				$plugins[ $file ]['slug'] = $split[0];
 			}
 
 		}
