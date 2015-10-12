@@ -3,7 +3,7 @@
 Plugin Name: Plugin Updater Tester
 Plugin URI: http://ironbounddesigns.com
 Description: Test plugin updates
-Version: 1.2.8
+Version: 1.3
 Author: Iron Bound Designs
 Author URI: http://ironbounddesigns.com
 License: GPLv2
@@ -11,9 +11,8 @@ License: GPLv2
 
 require_once( 'itelic-plugin-updater.php' );
 
-define( 'ITELIC_DEMO_VERSION', '1.2.8' );
-define( 'ITELIC_DEMO_PRODUCT_ID', 169 );
-define( 'ITELIC_DEMO_STORE_URL', 'http://www.itelic.dev' );
+define( 'ITELIC_DEMO_PRODUCT_ID', 18 );
+define( 'ITELIC_DEMO_STORE_URL', 'http://itelic.wpengine.com/' );
 
 set_site_transient( 'update_plugins', null );
 
@@ -138,10 +137,10 @@ function itelic_demo_save_license_key() {
 
 		if ( is_wp_error( $response ) ) {
 
-			$msg = $id->get_error_message();
+			$msg = $response->get_error_message();
 
 			if ( ! $msg ) {
-				$msg = __( "an unknown error occured." );
+				$msg = __( "an unknown error occurred." );
 			}
 
 			itelic_demo_display_admin_notice( 'error', sprintf( __( "Could not deactivate the license key because %s" ), $msg ) );
@@ -183,7 +182,6 @@ function itelic_make_plugin_updater() {
 
 	if ( $updater === null ) {
 		$updater = new ITELIC_Plugin_Updater( ITELIC_DEMO_STORE_URL, ITELIC_DEMO_PRODUCT_ID, __FILE__, array(
-			'version'       => ITELIC_DEMO_VERSION,
 			'key'           => get_option( 'itelic_demo_license_key' ),
 			'activation_id' => get_option( 'itelic_demo_activation_id', 0 )
 		) );
