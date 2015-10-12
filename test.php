@@ -14,7 +14,7 @@ require_once( 'itelic-plugin-updater.php' );
 define( 'ITELIC_DEMO_PRODUCT_ID', 18 );
 define( 'ITELIC_DEMO_STORE_URL', 'http://itelic.wpengine.com/' );
 
-set_site_transient( 'update_plugins', null );
+//set_site_transient( 'update_plugins', null );
 
 /**
  * Register an admin menu to contain our license key.
