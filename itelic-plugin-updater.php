@@ -92,6 +92,10 @@ class ITELIC_Plugin_Updater {
 
 		if ( empty( $args['version'] ) ) {
 
+			if ( ! function_exists( 'get_plugin_data' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
 			$data = get_plugin_data( $file, false, false );
 
 			$this->version = $data['Version'];
