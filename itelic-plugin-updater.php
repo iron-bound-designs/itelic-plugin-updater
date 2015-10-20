@@ -99,8 +99,10 @@ class ITELIC_Plugin_Updater {
 			$this->version = $args['version'];
 		}
 
-		if ( $args['key'] ) {
+		if ( isset( $args['key'] ) ) {
 			$this->key = $args['key'];
+		} elseif ( isset( $args['license'] ) ) {
+			$this->key = $args['license'];
 		}
 
 		if ( $args['activation_id'] ) {
